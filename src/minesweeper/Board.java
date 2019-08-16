@@ -9,7 +9,20 @@ public class Board {
 	private int hSize;
 	private int vSize;
 	private Set<Point> bombs;
+	private Set<Point> flags;
 	
+	public Board(int hSize, int vSize) {
+		this.board = new HashMap<Point,Box>();
+		this.bombs = new HashSet<Point>();
+		this.hSize = hSize;
+		this.vSize = vSize;
+		for (int x=0; x<hSize; x++) {
+			for (int y=0; y<vSize; y++) {
+				board.put(new Point(x,y), new Box(this,x,y));
+			}
+		}
+	}
+
 	public Box getBox(int x, int y) {
 		return board.get(new Point(x,y));
 	}
@@ -34,18 +47,6 @@ public class Board {
 		return bombs;
 	}
 	
-	public Board(int hSize, int vSize) {
-		this.board = new HashMap<Point,Box>();
-		this.bombs = new HashSet<Point>();
-		this.hSize = hSize;
-		this.vSize = vSize;
-		for (int x=0; x<hSize; x++) {
-			for (int y=0; y<vSize; y++) {
-				board.put(new Point(x,y), new Box(this,x,y));
-			}
-		}
-	}
-	
 	public void putBombs(int n) {
 		/**
 		 * Put n bombs randomly. Does not remove previously placed bombs. Updates the nearbyBombs on neighboring boxes
@@ -64,11 +65,6 @@ public class Board {
 				box = getBox(x,y);
 			}
 			box.putBomb();
-			addBomb(x,y);
-			Map<Point,Box> nearbyBoxes = box.getNearbyBoxes();
-			for (Box nearBox:nearbyBoxes.values()) {
-				nearBox.addNearbyBomb();
-			}
 		}
 	}
 	
@@ -76,6 +72,22 @@ public class Board {
 		for (Box box:board.values()) {
 			box.countNearbyBombs();
 		}
+	}
+	
+	public void addFlag(int x, int y) {
+		flags.add(new Point(x,y));
+	}
+	
+	public void removeFlag(int x, int y) {
+		flags.remove(new Point(x,y));
+	}
+	
+	public int countDeployedFlags() {
+		return flags.size();
+	}
+	
+	public int countRemainingFlags() {
+		return bombs.size() - flags.size();
 	}
 	
 	public void printBoard() {

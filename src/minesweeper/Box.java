@@ -24,13 +24,17 @@ public class Box {
 	
 	public void putBomb() {
 		hasBomb = true;
+		board.addBomb(x,y);
+		for (Box nearBox:getNearbyBoxes().values()) {
+			nearBox.addNearbyBombCount();
+		}
 	}
 	
 	public boolean hasBomb() {
 		return hasBomb;
 	}
 	
-	public void addNearbyBomb() {
+	public void addNearbyBombCount() {
 		nearbyBombs++;
 	}
 	
@@ -66,10 +70,12 @@ public class Box {
 	
 	public void putFlag() {
 		hasFlag = true;
+		board.addFlag(x,y);
 	}
 	
 	public void removeFlag() {
 		hasFlag = false;
+		board.removeFlag(x,y);
 	}
 	
 	public int displayValue() {
