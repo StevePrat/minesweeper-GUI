@@ -1,8 +1,8 @@
 package minesweeper;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.awt.Point;
+import javax.swing.*;
 
 public class Box {
 	
@@ -13,6 +13,7 @@ public class Box {
 	private boolean hasDetonated;
 	private int nearbyBombs;
 	private boolean hasFlag;
+	private JButton button;
 	
 	public Box(Board board, int x, int y) {
 		this.board = board;
@@ -20,6 +21,33 @@ public class Box {
 		this.y = y;
 		this.hasBomb = false;
 		this.nearbyBombs = 0;
+		this.hasFlag = false;
+	}
+	
+	public void setButton(JButton button) {
+		this.button = button;
+	}
+	
+	public JButton getButton() {
+		return button;
+	}
+	
+	public void leftClick() {
+		if (hasFlag()) {
+			// TODO cannot click
+		} else {
+			if (hasBomb()) {
+				// TODO detonate bomb
+			} else {
+				// TODO display nearby bombs count
+			}
+		}
+	}
+	
+	public void rightClick() {
+		if (!hasFlag()) {
+			// TODO flag the box 
+		}
 	}
 	
 	public void putBomb() {
@@ -79,6 +107,9 @@ public class Box {
 	}
 	
 	public int displayValue() {
+		/**
+		 *  For console debugging purposes
+		 */
 		if (hasFlag()) {
 			return -2;
 		} else {
@@ -88,5 +119,8 @@ public class Box {
 				return nearbyBombs;
 			}
 		}
-	}	
+	}
+	
+	
 }
+

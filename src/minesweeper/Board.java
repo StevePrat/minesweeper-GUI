@@ -2,6 +2,7 @@ package minesweeper;
 
 import java.util.*;
 import java.awt.Point;
+import javax.swing.*;
 
 public class Board {
 	
@@ -92,7 +93,7 @@ public class Board {
 	
 	public void printBoard() {
 		/**
-		 * For express debugging purposes
+		 * For console debugging purposes
 		 */
 		for (int i=0; i<getHeight(); i++) {
 			for (int j=0; j<getWidth(); j++) {
