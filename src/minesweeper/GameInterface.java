@@ -11,7 +11,6 @@ public class GameInterface {
 	private Board board;
 	private JFrame mainFrame;
 	private JFrame newGameWindow;
-	private JMenuBar menuBar;
 	private JLabel statusLabel;
 	private JTextField widthField;
 	private JTextField heightField;
@@ -89,7 +88,7 @@ public class GameInterface {
 		/* Initialize Board */
 		int width = Integer.parseInt(widthField.getText());
 		int height = Integer.parseInt(heightField.getText());
-		board = new Board(width,height);
+		board = new Board(this,width,height);
 		
 		/* Grid View for Board Panel */
 		boardPanel.removeAll();

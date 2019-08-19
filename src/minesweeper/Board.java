@@ -6,13 +6,16 @@ import javax.swing.*;
 
 public class Board {
 	
+	private GameInterface gameInterface;
 	private Map<Point,Box> board;
 	private int hSize;
 	private int vSize;
 	private Set<Point> bombs;
 	private Set<Point> flags;
+	private boolean gameOver;
 	
-	public Board(int hSize, int vSize) {
+	public Board(GameInterface gameInterface, int hSize, int vSize) {
+		this.gameInterface = gameInterface;
 		this.board = new HashMap<Point,Box>();
 		this.bombs = new HashSet<Point>();
 		this.hSize = hSize;
@@ -22,6 +25,7 @@ public class Board {
 				board.put(new Point(x,y), new Box(this,x,y));
 			}
 		}
+		this.gameOver = false;
 	}
 
 	public Box getBox(int x, int y) {
@@ -89,6 +93,23 @@ public class Board {
 	
 	public int countRemainingFlags() {
 		return bombs.size() - flags.size();
+	}
+	
+	public boolean isGameOver() {
+		return gameOver;
+	}
+	
+	public void stopGame() {
+		gameOver = true;
+		Box box;
+		for (Point p:bombs) {
+			box = getBox(p.x,p.y);
+			box.displayBombIcon();
+		}
+	}
+	
+	public void successful() {
+		
 	}
 	
 	public void printBoard() {

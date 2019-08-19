@@ -2,6 +2,8 @@ package minesweeper;
 
 import java.util.*;
 import java.awt.Point;
+import java.awt.event.*;
+
 import javax.swing.*;
 
 public class Box {
@@ -10,10 +12,12 @@ public class Box {
 	private int x;
 	private int y;
 	private boolean hasBomb;
-	private boolean hasDetonated;
 	private int nearbyBombs;
 	private boolean hasFlag;
 	private JButton button;
+	private ImageIcon bombIcon;
+	private ImageIcon flagIcon;
+	private BoxListener listener;
 	
 	public Box(Board board, int x, int y) {
 		this.board = board;
@@ -22,9 +26,13 @@ public class Box {
 		this.hasBomb = false;
 		this.nearbyBombs = 0;
 		this.hasFlag = false;
+		this.bombIcon = new ImageIcon("icons/Mine.ico","Bomb icon");
+		this.flagIcon = new ImageIcon("icons/Flag.ico","Flag icon");
+		this.listener = new BoxListener();
 	}
 	
 	public void setButton(JButton button) {
+		button.addMouseListener(listener);
 		this.button = button;
 	}
 	
@@ -33,21 +41,35 @@ public class Box {
 	}
 	
 	public void leftClick() {
-		if (hasFlag()) {
-			// TODO cannot click
-		} else {
+		if (!hasFlag()) {
+			button.setEnabled(false);
 			if (hasBomb()) {
-				// TODO detonate bomb
+				board.stopGame();
 			} else {
-				// TODO display nearby bombs count
+				if (nearbyBombs != 0) {
+					button.setText(Integer.toString(nearbyBombs));
+				} else {
+					clickNearby();
+				}
 			}
 		}
 	}
 	
 	public void rightClick() {
-		if (!hasFlag()) {
-			// TODO flag the box 
+		if (hasFlag()) {
+			hasFlag = false;
+			button.setIcon(null);
+		} else {
+			hasFlag = true;
+			button.setIcon(flagIcon);
 		}
+	}
+	
+	public void clickNearby() {
+		// TODO
+//		for (Box nb:getNearbyBoxes().values()) {
+//			nb.leftClick();
+//		}
 	}
 	
 	public void putBomb() {
@@ -76,6 +98,10 @@ public class Box {
 		}
 		this.nearbyBombs = nearbyBombs;
 		return nearbyBombs;
+	}
+	
+	public void displayBombIcon() {
+		button.setIcon(bombIcon);
 	}
 	
 	public Map<Point,Box> getNearbyBoxes() {
@@ -121,6 +147,29 @@ public class Box {
 		}
 	}
 	
+	class BoxListener implements MouseListener {
+		
+		public BoxListener() {}
+		
+		public void mouseClicked(MouseEvent evt) {
+			if (!board.isGameOver()) {
+				if (button == evt.getSource()) {
+					switch (evt.getButton()) {
+					case 1:
+						leftClick();
+					case 3:
+						rightClick();
+					}
+				}	
+			}
+		}
+		
+		public void mouseEntered(MouseEvent evt) {}
+		public void mouseExited(MouseEvent evt) {}
+		public void mousePressed(MouseEvent evt) {}
+		public void mouseReleased(MouseEvent evt) {}
+		
+	}
 	
 }
 
