@@ -9,50 +9,49 @@ import javax.swing.*;
 public class GameInterface {
 	
 	private Board board;
-	private JFrame frame;
+	private JFrame mainFrame;
+	private JFrame newGameWindow;
+	private JMenuBar menuBar;
 	private JLabel statusLabel;
 	private JTextField widthField;
 	private JTextField heightField;
 	private JTextField nField;
 	private JButton startButton;
+	private JButton newGameButton;
 	private StartListener startListener;
+	private NewGameListener newGameListener;
 	private JPanel statusPanel;
 	private JPanel paramsPanel;
 	private JPanel startPanel;
 	private JPanel boardPanel;
+	private JPanel newGamePanel;
 	
 	public GameInterface() {
-		frame = new JFrame("Minesweeper");
+		mainFrame = new JFrame("Minesweeper");
+		newGameWindow = new JFrame("New Game");
 		statusPanel = new JPanel();
 		paramsPanel = new JPanel();
 		startPanel = new JPanel();
 		boardPanel = new JPanel();
-		frame.add(statusPanel);
-		frame.add(paramsPanel);
-		frame.add(startPanel);
-		frame.add(boardPanel);		
+		newGamePanel = new JPanel();
+		newGameWindow = new JFrame("New Game");
 		statusLabel = new JLabel();
 		widthField = new JTextField();
 		heightField = new JTextField();
 		nField = new JTextField();
 		startButton = new JButton("Start Game");
+		newGameButton = new JButton("Start New Game");
 		startListener = new StartListener();
-		startButton.addMouseListener(startListener);
-		startPanel.add(startButton);
+		newGameListener = new NewGameListener();
 	}
 	
 	public void preStart() {
 		System.out.println("Game PreStart");
 		
-		frame.setVisible(true);
-		frame.setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.PAGE_AXIS));
+		newGameWindow.setVisible(true);
+		newGameWindow.setLayout(new BoxLayout(newGameWindow.getContentPane(), BoxLayout.PAGE_AXIS));
 		
-		/* status bar */
-		
-		statusLabel.setText("Status will be displayed here");
-		statusPanel.add(statusLabel);
-		
-		/* parameters */
+		/* Params @ New Game Window */
 		paramsPanel.setLayout(new SpringLayout());
 		paramsPanel.add(new JLabel("Board Width"));
 		paramsPanel.add(widthField);
@@ -61,31 +60,55 @@ public class GameInterface {
 		paramsPanel.add(new JLabel("Number of Bombs"));
 		paramsPanel.add(nField);
 		SpringUtilities.makeCompactGrid(paramsPanel,3,2,3,3,3,3);
+		newGameWindow.add(paramsPanel, BorderLayout.PAGE_START);
+		
+		/* Start Button @ New Game Window */
+		startButton.addMouseListener(startListener);
+		startPanel.add(startButton);
+		newGameWindow.add(startPanel);
+		
+		/* Status Bar @ Main Frame */
+		statusLabel.setText("Status will be shown here");
+		statusPanel.add(statusLabel);
+		mainFrame.add(statusPanel, BorderLayout.PAGE_START);
+		
+		/* Board Panel @ Main Frame */
+		mainFrame.add(boardPanel);
+		
+		/* Start New Game @ Main Frame */
+		newGameButton.addMouseListener(newGameListener);
+		newGamePanel.add(newGameButton);
+		mainFrame.add(newGamePanel, BorderLayout.PAGE_END);
 	}
 	
 	public void start() {
 		System.out.println("Game Started");
+		mainFrame.setVisible(true);
+		newGameWindow.setVisible(false);
 		
-		/* Board */
+		/* Initialize Board */
 		int width = Integer.parseInt(widthField.getText());
 		int height = Integer.parseInt(heightField.getText());
 		board = new Board(width,height);
 		
-		/* Grid View */
+		/* Grid View for Board Panel */
+		boardPanel.removeAll();
 		boardPanel.setLayout(new GridLayout(height,width));
 		
 		JButton btn;
 		Box box;
 		for (int y=0; y<height; y++) {
 			for (int x=0; x<width; x++) {
-				System.out.println("(" + Integer.toString(x) + "," + Integer.toString(y) + ")");
+//				System.out.println("(" + Integer.toString(x) + "," + Integer.toString(y) + ")");
 				btn = new JButton();
 				box = new Box(board,x,y);
 				box.setButton(btn);
 				boardPanel.add(btn);
 			}
 		}
-		boardPanel.revalidate();
+		
+		/* Refresh Main Frame */
+		mainFrame.revalidate();
 	}
 	
 	public static void main(String[] args) {
@@ -103,13 +126,30 @@ public class GameInterface {
 					start();
 				}
 			}
-			
 		}
 		
-		public void mouseEntered(MouseEvent evt) { }
-		public void mouseExited(MouseEvent evt) { }
-		public void mousePressed(MouseEvent evt) { }
-		public void mouseReleased(MouseEvent evt) { }
+		public void mouseEntered(MouseEvent evt) {}
+		public void mouseExited(MouseEvent evt) {}
+		public void mousePressed(MouseEvent evt) {}
+		public void mouseReleased(MouseEvent evt) {}
+	}
+	
+	class NewGameListener implements MouseListener {
+		
+		public NewGameListener() {}
+		
+		public void mouseClicked(MouseEvent evt) {
+			if (newGameButton == evt.getSource()) {
+				if (evt.getButton() == 1) {
+					newGameWindow.setVisible(true);
+				}
+			}
+		}
+		
+		public void mouseEntered(MouseEvent evt) {}
+		public void mouseExited(MouseEvent evt) {}
+		public void mousePressed(MouseEvent evt) {}
+		public void mouseReleased(MouseEvent evt) {}
 	}
 	
 }
