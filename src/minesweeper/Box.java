@@ -23,12 +23,18 @@ public class Box {
 		this.board = board;
 		this.x = x;
 		this.y = y;
-		this.hasBomb = false;
-		this.nearbyBombs = 0;
-		this.hasFlag = false;
-		this.bombIcon = new ImageIcon("icons/Mine.ico","Bomb icon");
-		this.flagIcon = new ImageIcon("icons/Flag.ico","Flag icon");
-		this.listener = new BoxListener();
+		hasBomb = false;
+		nearbyBombs = 0;
+		hasFlag = false;
+		button = new JButton();
+		bombIcon = new ImageIcon("icons/Bomb.png","Bomb icon");
+		flagIcon = new ImageIcon("icons/Flag.png","Flag icon");
+		listener = new BoxListener();
+		button.addMouseListener(listener);
+	}
+	
+	public Point getPoint() {
+		return new Point(x,y);
 	}
 	
 	public void setButton(JButton button) {
@@ -40,13 +46,18 @@ public class Box {
 		return button;
 	}
 	
+	public boolean isClicked() {
+		return button.isEnabled();
+	}
+	
 	public void leftClick() {
 		if (!hasFlag()) {
 			button.setEnabled(false);
 			if (hasBomb()) {
-				board.stopGame();
+				board.gameOver();
 			} else {
-				if (nearbyBombs != 0) {
+				board.check();
+				if (nearbyBombs > 0) {
 					button.setText(Integer.toString(nearbyBombs));
 				} else {
 					clickNearby();
@@ -66,10 +77,11 @@ public class Box {
 	}
 	
 	public void clickNearby() {
-		// TODO
-//		for (Box nb:getNearbyBoxes().values()) {
-//			nb.leftClick();
-//		}
+		for (Box nb:getNearbyBoxes().values()) {
+			if (!nb.isClicked()) {
+				nb.leftClick();
+			}
+		}
 	}
 	
 	public void putBomb() {

@@ -99,17 +99,40 @@ public class Board {
 		return gameOver;
 	}
 	
-	public void stopGame() {
+	public void gameOver() {
 		gameOver = true;
 		Box box;
 		for (Point p:bombs) {
 			box = getBox(p.x,p.y);
 			box.displayBombIcon();
 		}
+		gameInterface.gameOver();
 	}
 	
-	public void successful() {
-		
+	public boolean isSuccessful() {
+		if (flags.equals(bombs)) {
+			return true;
+		} else {
+			for (Box box:board.values()) {
+				if (!box.isClicked() && !bombs.contains(box.getPoint())) {
+					return false;
+				}
+			}
+			return true;
+		}
+	}
+	
+	public void check() {
+		/**
+		 * Check whether the game has been successfully completed, perform furter actions if true
+		 */
+		if (isSuccessful()) {
+			gameSuccess();
+		}
+	}
+	
+	public void gameSuccess() {
+		gameInterface.gameSuccess();
 	}
 	
 	public void printBoard() {

@@ -1,7 +1,6 @@
 package minesweeper;
 
 import java.util.*;
-import java.awt.Point;
 import java.awt.event.*;
 import java.awt.*;
 import javax.swing.*;
@@ -11,14 +10,15 @@ public class GameInterface {
 	private Board board;
 	private JFrame mainFrame;
 	private JFrame newGameWindow;
+	private JFrame gameOverWindow;
+	private JFrame gameSuccessWindow;
 	private JLabel statusLabel;
 	private JTextField widthField;
 	private JTextField heightField;
 	private JTextField nField;
 	private JButton startButton;
 	private JButton newGameButton;
-	private StartListener startListener;
-	private NewGameListener newGameListener;
+	private GameListener gameListener;
 	private JPanel statusPanel;
 	private JPanel paramsPanel;
 	private JPanel startPanel;
@@ -40,8 +40,7 @@ public class GameInterface {
 		nField = new JTextField();
 		startButton = new JButton("Start Game");
 		newGameButton = new JButton("Start New Game");
-		startListener = new StartListener();
-		newGameListener = new NewGameListener();
+		gameListener = new GameListener();
 	}
 	
 	public void preStart() {
@@ -62,9 +61,11 @@ public class GameInterface {
 		newGameWindow.add(paramsPanel, BorderLayout.PAGE_START);
 		
 		/* Start Button @ New Game Window */
-		startButton.addMouseListener(startListener);
+		startButton.addMouseListener(gameListener);
 		startPanel.add(startButton);
 		newGameWindow.add(startPanel);
+		
+		newGameWindow.setMinimumSize(new Dimension(200,150));
 		
 		/* Status Bar @ Main Frame */
 		statusLabel.setText("Status will be shown here");
@@ -75,13 +76,15 @@ public class GameInterface {
 		mainFrame.add(boardPanel);
 		
 		/* Start New Game @ Main Frame */
-		newGameButton.addMouseListener(newGameListener);
+		newGameButton.addMouseListener(gameListener);
 		newGamePanel.add(newGameButton);
 		mainFrame.add(newGamePanel, BorderLayout.PAGE_END);
+		mainFrame.setMinimumSize(new Dimension(600,400));
 	}
 	
 	public void start() {
 		System.out.println("Game Started");
+		mainFrame.setEnabled(true);
 		mainFrame.setVisible(true);
 		newGameWindow.setVisible(false);
 		
@@ -89,6 +92,10 @@ public class GameInterface {
 		int width = Integer.parseInt(widthField.getText());
 		int height = Integer.parseInt(heightField.getText());
 		board = new Board(this,width,height);
+		
+		/* Put Bombs */
+		int n = Integer.parseInt(nField.getText());
+		board.putBombs(n);
 		
 		/* Grid View for Board Panel */
 		boardPanel.removeAll();
@@ -99,9 +106,8 @@ public class GameInterface {
 		for (int y=0; y<height; y++) {
 			for (int x=0; x<width; x++) {
 //				System.out.println("(" + Integer.toString(x) + "," + Integer.toString(y) + ")");
-				btn = new JButton();
-				box = new Box(board,x,y);
-				box.setButton(btn);
+				box = board.getBox(x,y);
+				btn = box.getButton();
 				boardPanel.add(btn);
 			}
 		}
@@ -110,45 +116,66 @@ public class GameInterface {
 		mainFrame.revalidate();
 	}
 	
+	public void gameOver() {
+		gameOverWindow = new JFrame("Game Over");
+		gameOverWindow.setMinimumSize(new Dimension(400,300));
+		gameOverWindow.setVisible(true);
+		mainFrame.setEnabled(false);
+		
+		Container pane = gameOverWindow.getContentPane();
+		pane.setLayout(new BoxLayout(pane,BoxLayout.PAGE_AXIS));
+		JLabel msgLabel = new JLabel("Don't give up! Click the button to start a new game");
+		pane.add(msgLabel);
+		pane.add(newGameButton);
+	}
+	
+	public void gameSuccess() {
+		gameSuccessWindow = new JFrame("Congratulations!");
+		gameSuccessWindow.setMinimumSize(new Dimension(400,300));
+		gameSuccessWindow.setVisible(true);
+		mainFrame.setEnabled(false);
+		
+		Container pane = gameSuccessWindow.getContentPane();
+		pane.setLayout(new BoxLayout(pane,BoxLayout.PAGE_AXIS));
+		JLabel msgLabel = new JLabel("You have just successfully finished the game! Click the button to start a new game");
+		pane.add(msgLabel);
+		pane.add(newGameButton);
+	}
+	
 	public static void main(String[] args) {
 		GameInterface game = new GameInterface();
 		game.preStart();
 	}
 	
-	class StartListener implements MouseListener {
-		
-		public StartListener() {}
-		
+	class GameListener implements MouseListener {
+
+		@Override
 		public void mouseClicked(MouseEvent evt) {
 			if (startButton == evt.getSource()) {
 				if (evt.getButton() == 1) {
 					start();
 				}
 			}
-		}
-		
-		public void mouseEntered(MouseEvent evt) {}
-		public void mouseExited(MouseEvent evt) {}
-		public void mousePressed(MouseEvent evt) {}
-		public void mouseReleased(MouseEvent evt) {}
-	}
-	
-	class NewGameListener implements MouseListener {
-		
-		public NewGameListener() {}
-		
-		public void mouseClicked(MouseEvent evt) {
 			if (newGameButton == evt.getSource()) {
 				if (evt.getButton() == 1) {
 					newGameWindow.setVisible(true);
+					mainFrame.setVisible(false);
+					try {
+						gameOverWindow.dispose();
+						gameSuccessWindow.dispose();
+					} catch (Exception e) {
+						if (!(e instanceof java.lang.NullPointerException)) {
+							e.printStackTrace();
+						}
+					}
 				}
-			}
+			}	
 		}
-		
-		public void mouseEntered(MouseEvent evt) {}
-		public void mouseExited(MouseEvent evt) {}
-		public void mousePressed(MouseEvent evt) {}
-		public void mouseReleased(MouseEvent evt) {}
+
+		@Override public void mousePressed(MouseEvent e) {}
+		@Override public void mouseReleased(MouseEvent e) {}
+		@Override public void mouseEntered(MouseEvent e) {}
+		@Override public void mouseExited(MouseEvent e) {}		
 	}
 	
 }
