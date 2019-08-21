@@ -18,7 +18,7 @@ public class GameInterface {
 	private JTextField nField;
 	private JButton startButton;
 	private JButton newGameButton;
-	private GameListener gameListener;
+	private GameListener listener;
 	private JPanel statusPanel;
 	private JPanel paramsPanel;
 	private JPanel startPanel;
@@ -40,7 +40,7 @@ public class GameInterface {
 		nField = new JTextField();
 		startButton = new JButton("Start Game");
 		newGameButton = new JButton("Start New Game");
-		gameListener = new GameListener();
+		listener = new GameListener();
 	}
 	
 	public void preStart() {
@@ -61,7 +61,7 @@ public class GameInterface {
 		newGameWindow.add(paramsPanel, BorderLayout.PAGE_START);
 		
 		/* Start Button @ New Game Window */
-		startButton.addMouseListener(gameListener);
+		startButton.addMouseListener(listener);
 		startPanel.add(startButton);
 		newGameWindow.add(startPanel);
 		
@@ -75,15 +75,20 @@ public class GameInterface {
 		/* Board Panel @ Main Frame */
 		mainFrame.add(boardPanel);
 		
-		/* Start New Game @ Main Frame */
-		newGameButton.addMouseListener(gameListener);
-		newGamePanel.add(newGameButton);
-		mainFrame.add(newGamePanel, BorderLayout.PAGE_END);
-		mainFrame.setMinimumSize(new Dimension(600,400));
+		/* Add Listeners to All Frames */
+		mainFrame.addWindowListener(listener);
+		newGameWindow.addWindowListener(listener);
 	}
 	
 	public void start() {
 		System.out.println("Game Started");
+		
+		/* Start New Game @ Main Frame */
+		newGameButton.addMouseListener(listener);
+		newGamePanel.add(newGameButton);
+		mainFrame.add(newGamePanel, BorderLayout.PAGE_END);
+		
+		mainFrame.setMinimumSize(new Dimension(600,400));
 		mainFrame.setEnabled(true);
 		mainFrame.setVisible(true);
 		newGameWindow.setVisible(false);
@@ -112,34 +117,63 @@ public class GameInterface {
 			}
 		}
 		
-		/* Refresh Main Frame */
+		/* Refresh */
 		mainFrame.revalidate();
+		for (int y=0; y<height; y++) {
+			for (int x=0; x<width; x++) {
+				box = board.getBox(x,y);
+				box.resizeBombImage();
+				box.resizeFlagImage();
+			}
+		}
+	}
+	
+	public void updateStatus() {
+		statusLabel.setText(board.getStatusMsg());
+		System.out.println("Status label updated: " + board.getStatusMsg());
+		statusPanel.revalidate();
 	}
 	
 	public void gameOver() {
 		gameOverWindow = new JFrame("Game Over");
 		gameOverWindow.setMinimumSize(new Dimension(400,300));
 		gameOverWindow.setVisible(true);
-		mainFrame.setEnabled(false);
+		boardPanel.setEnabled(false);
 		
 		Container pane = gameOverWindow.getContentPane();
 		pane.setLayout(new BoxLayout(pane,BoxLayout.PAGE_AXIS));
+		JPanel msgPanel = new JPanel();
+		msgPanel.setAlignmentX(JPanel.CENTER_ALIGNMENT);
 		JLabel msgLabel = new JLabel("Don't give up! Click the button to start a new game");
-		pane.add(msgLabel);
-		pane.add(newGameButton);
+		msgLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		msgPanel.add(msgLabel);
+		pane.add(msgPanel);
+		JPanel btnPanel = new JPanel();
+		btnPanel.setAlignmentX(JPanel.CENTER_ALIGNMENT);
+		newGameButton.setHorizontalAlignment(SwingConstants.CENTER);
+		btnPanel.add(newGameButton);
+		pane.add(btnPanel);
 	}
 	
 	public void gameSuccess() {
 		gameSuccessWindow = new JFrame("Congratulations!");
 		gameSuccessWindow.setMinimumSize(new Dimension(400,300));
 		gameSuccessWindow.setVisible(true);
-		mainFrame.setEnabled(false);
+		boardPanel.setEnabled(false);
 		
 		Container pane = gameSuccessWindow.getContentPane();
 		pane.setLayout(new BoxLayout(pane,BoxLayout.PAGE_AXIS));
+		JPanel msgPanel = new JPanel();
+		msgPanel.setAlignmentX(JPanel.CENTER_ALIGNMENT);
 		JLabel msgLabel = new JLabel("You have just successfully finished the game! Click the button to start a new game");
-		pane.add(msgLabel);
-		pane.add(newGameButton);
+		msgLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		msgPanel.add(msgLabel);
+		pane.add(msgPanel);
+		JPanel btnPanel = new JPanel();
+		btnPanel.setAlignmentX(JPanel.CENTER_ALIGNMENT);
+		newGameButton.setHorizontalAlignment(SwingConstants.CENTER);
+		btnPanel.add(newGameButton);
+		pane.add(btnPanel);
 	}
 	
 	public static void main(String[] args) {
@@ -147,7 +181,7 @@ public class GameInterface {
 		game.preStart();
 	}
 	
-	class GameListener implements MouseListener {
+	class GameListener implements MouseListener, WindowListener {
 
 		@Override
 		public void mouseClicked(MouseEvent evt) {
@@ -175,7 +209,23 @@ public class GameInterface {
 		@Override public void mousePressed(MouseEvent e) {}
 		@Override public void mouseReleased(MouseEvent e) {}
 		@Override public void mouseEntered(MouseEvent e) {}
-		@Override public void mouseExited(MouseEvent e) {}		
+		@Override public void mouseExited(MouseEvent e) {}
+
+		@Override 
+		public void windowClosing(WindowEvent e) {
+			System.out.println("Window closing");
+			newGameWindow.dispose();
+			mainFrame.dispose();
+			System.exit(0);
+		}
+		
+		@Override public void windowClosed(WindowEvent e) {}
+		@Override public void windowOpened(WindowEvent e) {}
+		@Override public void windowIconified(WindowEvent e) {}
+		@Override public void windowDeiconified(WindowEvent e) {}
+		@Override public void windowActivated(WindowEvent e) {}
+		@Override public void windowDeactivated(WindowEvent e) {}
+		
 	}
 	
 }

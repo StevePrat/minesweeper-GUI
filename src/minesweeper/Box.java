@@ -1,12 +1,15 @@
 package minesweeper;
 
 import java.util.*;
-import java.awt.Point;
+import java.awt.*;
 import java.awt.event.*;
 
 import javax.swing.*;
 
 public class Box {
+	
+	private static ImageIcon masterBombIcon = new ImageIcon("icons/Bomb.png","Bomb icon");;
+	private static ImageIcon masterFlagIcon = new ImageIcon("icons/Flag.png","Flag icon");
 	
 	private Board board;
 	private int x;
@@ -14,6 +17,7 @@ public class Box {
 	private boolean hasBomb;
 	private int nearbyBombs;
 	private boolean hasFlag;
+	private boolean isClicked;
 	private JButton button;
 	private ImageIcon bombIcon;
 	private ImageIcon flagIcon;
@@ -26,9 +30,10 @@ public class Box {
 		hasBomb = false;
 		nearbyBombs = 0;
 		hasFlag = false;
+		isClicked = false;
 		button = new JButton();
-		bombIcon = new ImageIcon("icons/Bomb.png","Bomb icon");
-		flagIcon = new ImageIcon("icons/Flag.png","Flag icon");
+		bombIcon = masterBombIcon;
+		flagIcon = masterFlagIcon;
 		listener = new BoxListener();
 		button.addMouseListener(listener);
 	}
@@ -47,33 +52,36 @@ public class Box {
 	}
 	
 	public boolean isClicked() {
-		return button.isEnabled();
+		return isClicked;
 	}
 	
 	public void leftClick() {
 		if (!hasFlag()) {
+			isClicked = true;
 			button.setEnabled(false);
+			System.out.println("Button left clicked: " + Integer.toString(x) + "," + Integer.toString(y));
 			if (hasBomb()) {
 				board.gameOver();
 			} else {
 				board.check();
 				if (nearbyBombs > 0) {
 					button.setText(Integer.toString(nearbyBombs));
+					System.out.println("Nearby bombs: " + Integer.toString(nearbyBombs));
 				} else {
-					clickNearby();
+					 clickNearby();
 				}
 			}
 		}
 	}
 	
 	public void rightClick() {
+		System.out.println("Button right clicked: " + Integer.toString(x) + "," + Integer.toString(y));
 		if (hasFlag()) {
-			hasFlag = false;
-			button.setIcon(null);
+			removeFlag();
 		} else {
-			hasFlag = true;
-			button.setIcon(flagIcon);
+			putFlag();
 		}
+		board.check();
 	}
 	
 	public void clickNearby() {
@@ -116,6 +124,10 @@ public class Box {
 		button.setIcon(bombIcon);
 	}
 	
+	public void displayFlagIcon() {
+		button.setIcon(flagIcon);
+	}
+	
 	public Map<Point,Box> getNearbyBoxes() {
 		Map<Point,Box> nearbyBoxes = new HashMap<Point,Box>();
 		int leftLimit = Integer.max(0,x-1);
@@ -135,13 +147,17 @@ public class Box {
 	}
 	
 	public void putFlag() {
-		hasFlag = true;
-		board.addFlag(x,y);
+		if (board.countRemainingFlags() > 0) {
+			hasFlag = true;
+			board.addFlag(x,y);
+			button.setIcon(flagIcon);
+		}
 	}
 	
 	public void removeFlag() {
 		hasFlag = false;
 		board.removeFlag(x,y);
+		button.setIcon(null);
 	}
 	
 	public int displayValue() {
@@ -159,16 +175,34 @@ public class Box {
 		}
 	}
 	
-	class BoxListener implements MouseListener {
+	public void resizeBombImage() {
+		int width = button.getWidth();
+		int height = button.getHeight();
+		Image masterBombImg = masterBombIcon.getImage();
+        Image scaledBombImg = masterBombImg.getScaledInstance(button.getWidth(), button.getHeight(), java.awt.Image.SCALE_SMOOTH);
+        bombIcon = new ImageIcon(scaledBombImg);
+	}
+	
+	public void resizeFlagImage() {
+		int width = button.getWidth();
+		int height = button.getHeight();
+		Image masterFlagImg = masterFlagIcon.getImage();
+		Image scaledFlagImg = masterFlagImg.getScaledInstance(button.getWidth(), button.getHeight(), java.awt.Image.SCALE_SMOOTH);
+		flagIcon = new ImageIcon(scaledFlagImg);
+	}
+	
+	class BoxListener implements MouseListener, ComponentListener {
 		
 		public BoxListener() {}
 		
+		@Override
 		public void mouseClicked(MouseEvent evt) {
 			if (!board.isGameOver()) {
 				if (button == evt.getSource()) {
 					switch (evt.getButton()) {
 					case 1:
 						leftClick();
+						break;
 					case 3:
 						rightClick();
 					}
@@ -176,11 +210,38 @@ public class Box {
 			}
 		}
 		
-		public void mouseEntered(MouseEvent evt) {}
-		public void mouseExited(MouseEvent evt) {}
-		public void mousePressed(MouseEvent evt) {}
-		public void mouseReleased(MouseEvent evt) {}
+		@Override public void mouseEntered(MouseEvent evt) {}
+		@Override public void mouseExited(MouseEvent evt) {}
+		@Override public void mousePressed(MouseEvent evt) {}
+		@Override public void mouseReleased(MouseEvent evt) {}
 		
+		@Override
+		public void componentResized(ComponentEvent e) {
+			resizeBombImage();
+			resizeFlagImage();
+//			Dimension size = button.getSize();
+//			Insets insets = button.getInsets();
+//			size.width -= insets.left + insets.right;
+//            size.height -= insets.top + insets.bottom;
+//            if (size.width > size.height) {
+//                size.width = -1;
+//            } else {
+//                size.height = -1;
+//            }
+//            
+//            Image masterBombImg = masterBombIcon.getImage();
+//            Image scaledBombImg = masterBombImg.getScaledInstance(size.width, size.height, java.awt.Image.SCALE_SMOOTH);
+//            bombIcon = new ImageIcon(scaledBombImg);
+//            
+//			Image masterFlagImg = masterFlagIcon.getImage();
+//			Image scaledFlagImg = masterFlagImg.getScaledInstance(size.width, size.height, java.awt.Image.SCALE_SMOOTH);
+//			flagIcon = new ImageIcon(scaledFlagImg);
+		}
+
+		@Override public void componentMoved(ComponentEvent e) {}
+		@Override public void componentShown(ComponentEvent e) {}
+		@Override public void componentHidden(ComponentEvent e) {}
+
 	}
 	
 }

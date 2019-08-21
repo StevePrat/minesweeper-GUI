@@ -6,18 +6,20 @@ import javax.swing.*;
 
 public class Board {
 	
-	private GameInterface gameInterface;
+	private GameInterface intrface;
 	private Map<Point,Box> board;
 	private int hSize;
 	private int vSize;
 	private Set<Point> bombs;
 	private Set<Point> flags;
 	private boolean gameOver;
+	private String statusMsg;
 	
 	public Board(GameInterface gameInterface, int hSize, int vSize) {
-		this.gameInterface = gameInterface;
-		this.board = new HashMap<Point,Box>();
-		this.bombs = new HashSet<Point>();
+		intrface = gameInterface;
+		board = new HashMap<Point,Box>();
+		bombs = new HashSet<Point>();
+		flags = new HashSet<Point>();
 		this.hSize = hSize;
 		this.vSize = vSize;
 		for (int x=0; x<hSize; x++) {
@@ -25,7 +27,7 @@ public class Board {
 				board.put(new Point(x,y), new Box(this,x,y));
 			}
 		}
-		this.gameOver = false;
+		gameOver = false;
 	}
 
 	public Box getBox(int x, int y) {
@@ -54,7 +56,10 @@ public class Board {
 	
 	public void putBombs(int n) {
 		/**
-		 * Put n bombs randomly. Does not remove previously placed bombs. Updates the nearbyBombs on neighboring boxes
+		 * Put n bombs randomly. 
+		 * Does not remove previously placed bombs. 
+		 * Updates the nearbyBombs on neighboring boxes.
+		 * Updates status message
 		 */
 		Random rnd = new Random();
 		int x;
@@ -71,6 +76,7 @@ public class Board {
 			}
 			box.putBomb();
 		}
+		updateStatus();
 	}
 	
 	public void countNearbyBombs() {
@@ -81,10 +87,12 @@ public class Board {
 	
 	public void addFlag(int x, int y) {
 		flags.add(new Point(x,y));
+		updateStatus();
 	}
 	
 	public void removeFlag(int x, int y) {
 		flags.remove(new Point(x,y));
+		updateStatus();
 	}
 	
 	public int countDeployedFlags() {
@@ -106,20 +114,19 @@ public class Board {
 			box = getBox(p.x,p.y);
 			box.displayBombIcon();
 		}
-		gameInterface.gameOver();
+		intrface.gameOver();
 	}
 	
 	public boolean isSuccessful() {
-		if (flags.equals(bombs)) {
-			return true;
-		} else {
-			for (Box box:board.values()) {
-				if (!box.isClicked() && !bombs.contains(box.getPoint())) {
-					return false;
-				}
+		/* Check whether all boxes without bomb have been clicked */
+		for (Box box:board.values()) {
+			if (!box.isClicked() && !bombs.contains(box.getPoint())) {
+				return false; // code stops here if not successful yet
 			}
-			return true;
 		}
+		
+		/* Code will only reach here if game is successful */
+		return true;
 	}
 	
 	public void check() {
@@ -132,7 +139,26 @@ public class Board {
 	}
 	
 	public void gameSuccess() {
-		gameInterface.gameSuccess();
+		Box box;
+		for (Point p:bombs) {
+			box = getBox(p.x,p.y);
+			box.displayFlagIcon();
+		}
+		intrface.gameSuccess();
+	}
+	
+	public void setStatusMsg(String statusMsg) {
+		this.statusMsg = statusMsg;
+	}
+	
+	public String getStatusMsg() {
+		return statusMsg;
+	}
+	
+	public void updateStatus() {
+		setStatusMsg("Remaining Flags: " + Integer.toString(countRemainingFlags()));
+		System.out.println("Board status updated: " + getStatusMsg());
+		intrface.updateStatus();
 	}
 	
 	public void printBoard() {
