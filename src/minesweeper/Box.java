@@ -176,16 +176,12 @@ public class Box {
 	}
 	
 	public void resizeBombImage() {
-		int width = button.getWidth();
-		int height = button.getHeight();
 		Image masterBombImg = masterBombIcon.getImage();
         Image scaledBombImg = masterBombImg.getScaledInstance(button.getWidth(), button.getHeight(), java.awt.Image.SCALE_SMOOTH);
         bombIcon = new ImageIcon(scaledBombImg);
 	}
 	
 	public void resizeFlagImage() {
-		int width = button.getWidth();
-		int height = button.getHeight();
 		Image masterFlagImg = masterFlagIcon.getImage();
 		Image scaledFlagImg = masterFlagImg.getScaledInstance(button.getWidth(), button.getHeight(), java.awt.Image.SCALE_SMOOTH);
 		flagIcon = new ImageIcon(scaledFlagImg);

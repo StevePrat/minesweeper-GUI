@@ -2,7 +2,6 @@ package minesweeper;
 
 import java.util.*;
 import java.awt.Point;
-import javax.swing.*;
 
 public class Board {
 	
