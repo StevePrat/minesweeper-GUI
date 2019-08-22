@@ -12,6 +12,7 @@ public class GameInterface {
 	private JFrame gameOverWindow;
 	private JFrame gameSuccessWindow;
 	private JLabel statusLabel;
+	private JLabel warningLabel;
 	private JTextField widthField;
 	private JTextField heightField;
 	private JTextField nField;
@@ -23,6 +24,7 @@ public class GameInterface {
 	private JPanel startPanel;
 	private JPanel boardPanel;
 	private JPanel newGamePanel;
+	private JPanel warningPanel;
 	
 	public GameInterface() {
 		mainFrame = new JFrame("Minesweeper");
@@ -34,6 +36,8 @@ public class GameInterface {
 		newGamePanel = new JPanel();
 		newGameWindow = new JFrame("New Game");
 		statusLabel = new JLabel();
+		warningLabel = new JLabel();
+		warningPanel = new JPanel();
 		widthField = new JTextField();
 		heightField = new JTextField();
 		nField = new JTextField();
@@ -64,7 +68,11 @@ public class GameInterface {
 		startPanel.add(startButton);
 		newGameWindow.add(startPanel);
 		
-		newGameWindow.setMinimumSize(new Dimension(200,150));
+		/* Warning Panel @ New Game Window */
+		warningPanel.add(warningLabel);
+		newGameWindow.add(warningPanel);
+		
+		newGameWindow.setMinimumSize(new Dimension(200,175));
 		
 		/* Status Bar @ Main Frame */
 		statusLabel.setText("Status will be shown here");
@@ -77,6 +85,20 @@ public class GameInterface {
 		/* Add Listeners to All Frames */
 		mainFrame.addWindowListener(listener);
 		newGameWindow.addWindowListener(listener);
+	}
+	
+	public boolean isParamsValid() {
+		int width = Integer.parseInt(widthField.getText());
+		int height = Integer.parseInt(heightField.getText());
+		int boxes = width * height;
+		int bombs = Integer.parseInt(nField.getText());
+		return bombs < boxes;
+	}
+	
+	public void showWarning(String msg) {
+		warningLabel.setText(msg);
+		warningPanel.revalidate();
+		newGameWindow.revalidate();
 	}
 	
 	public void start() {
@@ -186,7 +208,12 @@ public class GameInterface {
 		public void mouseClicked(MouseEvent evt) {
 			if (startButton == evt.getSource()) {
 				if (evt.getButton() == 1) {
-					start();
+					if (isParamsValid()) {
+						showWarning(null);
+						start();
+					} else {
+						showWarning("Too many bombs");
+					}
 				}
 			}
 			if (newGameButton == evt.getSource()) {
