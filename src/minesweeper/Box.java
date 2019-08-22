@@ -8,8 +8,8 @@ import javax.swing.*;
 
 public class Box {
 	
-	private static ImageIcon masterBombIcon = new ImageIcon("icons/Bomb.png","Bomb icon");;
-	private static ImageIcon masterFlagIcon = new ImageIcon("icons/Flag.png","Flag icon");
+	private ImageIcon masterBombIcon = new ImageIcon(getClass().getResource("/Bomb.png"));
+	private ImageIcon masterFlagIcon = new ImageIcon(getClass().getResource("/Flag.png"));
 	
 	private Board board;
 	private int x;
