@@ -2,6 +2,7 @@ package minesweeper;
 
 import java.util.*;
 import java.awt.Point;
+import java.time.*;
 
 public class Board {
 	
@@ -13,6 +14,10 @@ public class Board {
 	private Set<Point> flags;
 	private boolean gameOver;
 	private String statusMsg;
+	private final LocalTime startTime;
+	private LocalTime currentTime;
+	private TimerTask updater;
+	private Timer timer;
 	
 	public Board(GameInterface gameInterface, int hSize, int vSize) {
 		intrface = gameInterface;
@@ -27,6 +32,10 @@ public class Board {
 			}
 		}
 		gameOver = false;
+		startTime = LocalTime.now();
+		timer = new Timer();
+		updater = new StatusUpdater();
+		timer.scheduleAtFixedRate(updater, 0, 500);
 	}
 
 	public Box getBox(int x, int y) {
@@ -113,6 +122,7 @@ public class Board {
 			box = getBox(p.x,p.y);
 			box.displayBombIcon();
 		}
+		timer.cancel();
 		intrface.gameOver();
 	}
 	
@@ -143,6 +153,7 @@ public class Board {
 			box = getBox(p.x,p.y);
 			box.displayFlagIcon();
 		}
+		timer.cancel();
 		intrface.gameSuccess();
 	}
 	
@@ -155,9 +166,7 @@ public class Board {
 	}
 	
 	public void updateStatus() {
-		setStatusMsg("Remaining Flags: " + Integer.toString(countRemainingFlags()));
-		System.out.println("Board status updated: " + getStatusMsg());
-		intrface.updateStatus();
+		updater.run();
 	}
 	
 	public void printBoard() {
@@ -176,4 +185,35 @@ public class Board {
 			System.out.println();
 		}
 	}
+	
+	class StatusUpdater extends TimerTask implements Runnable {
+		
+		@Override
+		public void run() {
+			currentTime = LocalTime.now();
+			Duration d = Duration.between(startTime, currentTime);
+			String timeStr = toString(d);
+			setStatusMsg("Elapsed Time: " + timeStr + " | Remaining Flags: " + Integer.toString(countRemainingFlags()));
+			intrface.updateStatus();		
+		}
+		
+		private String toString(Duration d) {
+			long mins,secs;
+			mins = d.getSeconds() / 60;
+			secs = d.getSeconds() % 60;
+			StringBuilder sb = new StringBuilder();
+			if (mins < 10) {
+				sb.append("0");
+			}
+			sb.append(mins);
+			sb.append(":");
+			if (secs < 10) {
+				sb.append("0");
+			}
+			sb.append(secs);
+			return sb.toString();
+		}
+		
+	}
+	
 }
