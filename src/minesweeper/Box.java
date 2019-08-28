@@ -56,14 +56,14 @@ public class Box {
 	}
 	
 	public void leftClick() {
-		if (!hasFlag()) {
+		if (!hasFlag() && !isClicked()) {
 			isClicked = true;
 			button.setEnabled(false);
 			System.out.println("Button left clicked: " + Integer.toString(x) + "," + Integer.toString(y));
 			if (hasBomb()) {
 				board.gameOver();
 			} else {
-				board.check();
+				board.checkForSuccess();
 				if (nearbyBombs > 0) {
 					button.setText(Integer.toString(nearbyBombs));
 					System.out.println("Nearby bombs: " + Integer.toString(nearbyBombs));
@@ -81,7 +81,7 @@ public class Box {
 		} else {
 			putFlag();
 		}
-		board.check();
+		board.checkForSuccess();
 	}
 	
 	public void clickNearby() {
@@ -108,7 +108,7 @@ public class Box {
 		nearbyBombs++;
 	}
 	
-	public int countNearbyBombs() {
+	public void countNearbyBombs() {
 		int nearbyBombs = 0;
 		Map<Point,Box> nearbyBoxes = getNearbyBoxes();
 		for (Box nb:nearbyBoxes.values()) {
@@ -117,6 +117,9 @@ public class Box {
 			}
 		}
 		this.nearbyBombs = nearbyBombs;
+	}
+	
+	public int getNearbyBombCount() {
 		return nearbyBombs;
 	}
 	

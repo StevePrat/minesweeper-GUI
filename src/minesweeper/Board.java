@@ -16,8 +16,10 @@ public class Board {
 	private String statusMsg;
 	private final LocalTime startTime;
 	private LocalTime currentTime;
+	private Duration duration;
 	private TimerTask updater;
 	private Timer timer;
+	private boolean isSolverOn;
 	
 	public Board(GameInterface gameInterface, int hSize, int vSize) {
 		intrface = gameInterface;
@@ -36,8 +38,25 @@ public class Board {
 		timer = new Timer();
 		updater = new StatusUpdater();
 		timer.scheduleAtFixedRate(updater, 0, 500);
+		isSolverOn = false;
 	}
-
+	
+	public void solverOn() {
+		isSolverOn = true;
+	}
+	
+	public void solverOff() {
+		isSolverOn = false;
+	}
+	
+	public boolean getSolverStatus() {
+		return isSolverOn;
+	}
+	
+	public Collection<Box> getAllBoxes() {
+		return board.values();
+	}
+	
 	public Box getBox(int x, int y) {
 		return board.get(new Point(x,y));
 	}
@@ -58,7 +77,7 @@ public class Board {
 		bombs.add(new Point(x,y));
 	}
 	
-	public Set getBombs() {
+	public Set<Point> getBombs() {
 		return bombs;
 	}
 	
@@ -123,7 +142,13 @@ public class Board {
 			box.displayBombIcon();
 		}
 		timer.cancel();
-		intrface.gameOver();
+		
+		if (getSolverStatus()) {
+			String timeStr = durationToString(duration);
+			setStatusMsg("Elapsed Time: " + timeStr + " | Solver accidentally hit a bomb");
+		} else {
+			intrface.gameOver();
+		}
 	}
 	
 	public boolean isSuccessful() {
@@ -138,7 +163,7 @@ public class Board {
 		return true;
 	}
 	
-	public void check() {
+	public void checkForSuccess() {
 		/**
 		 * Check whether the game has been successfully completed, perform furter actions if true
 		 */
@@ -154,7 +179,13 @@ public class Board {
 			box.displayFlagIcon();
 		}
 		timer.cancel();
-		intrface.gameSuccess();
+		
+		if (getSolverStatus()) {
+			String timeStr = durationToString(duration);
+			setStatusMsg("Elapsed Time: " + timeStr + " | Solver successfully finished the game");
+		} else {
+			intrface.gameSuccess();
+		}
 	}
 	
 	public void setStatusMsg(String statusMsg) {
@@ -186,32 +217,32 @@ public class Board {
 		}
 	}
 	
+	private static String durationToString(Duration d) {
+		long mins,secs;
+		mins = d.getSeconds() / 60;
+		secs = d.getSeconds() % 60;
+		StringBuilder sb = new StringBuilder();
+		if (mins < 10) {
+			sb.append("0");
+		}
+		sb.append(mins);
+		sb.append(":");
+		if (secs < 10) {
+			sb.append("0");
+		}
+		sb.append(secs);
+		return sb.toString();
+	}
+	
 	class StatusUpdater extends TimerTask implements Runnable {
 		
 		@Override
 		public void run() {
 			currentTime = LocalTime.now();
-			Duration d = Duration.between(startTime, currentTime);
-			String timeStr = toString(d);
+			duration = Duration.between(startTime, currentTime);
+			String timeStr = durationToString(duration);
 			setStatusMsg("Elapsed Time: " + timeStr + " | Remaining Flags: " + Integer.toString(countRemainingFlags()));
 			intrface.updateStatus();		
-		}
-		
-		private String toString(Duration d) {
-			long mins,secs;
-			mins = d.getSeconds() / 60;
-			secs = d.getSeconds() % 60;
-			StringBuilder sb = new StringBuilder();
-			if (mins < 10) {
-				sb.append("0");
-			}
-			sb.append(mins);
-			sb.append(":");
-			if (secs < 10) {
-				sb.append("0");
-			}
-			sb.append(secs);
-			return sb.toString();
 		}
 		
 	}
