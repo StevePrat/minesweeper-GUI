@@ -176,7 +176,7 @@ public class GameInterface {
 		pane.setLayout(new BoxLayout(pane,BoxLayout.PAGE_AXIS));
 		JPanel msgPanel = new JPanel();
 		msgPanel.setAlignmentX(JPanel.CENTER_ALIGNMENT);
-		JLabel msgLabel = new JLabel("Don't give up! Click the button to start a new game");
+		JLabel msgLabel = new JLabel("Don't give up! Try again!");
 		msgLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		msgPanel.add(msgLabel);
 		pane.add(msgPanel);
@@ -197,7 +197,7 @@ public class GameInterface {
 		pane.setLayout(new BoxLayout(pane,BoxLayout.PAGE_AXIS));
 		JPanel msgPanel = new JPanel();
 		msgPanel.setAlignmentX(JPanel.CENTER_ALIGNMENT);
-		JLabel msgLabel = new JLabel("You have just successfully finished the game! Click the button to start a new game");
+		JLabel msgLabel = new JLabel("You have just successfully finished the game!");
 		msgLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		msgPanel.add(msgLabel);
 		pane.add(msgPanel);

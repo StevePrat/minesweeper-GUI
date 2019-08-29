@@ -21,27 +21,6 @@ public class Solver extends Thread {
 		return clickedBoxes;
 	}
 	
-	private Set<Box> getUnClickedNeighbours(Box box) {
-		Set<Box> unClicked = new HashSet<Box>();
-		Collection<Box> nearBoxes = box.getNearbyBoxes().values();
-		for (Box nb:nearBoxes) {
-			if (!nb.isClicked()) {
-				unClicked.add(nb);
-			}
-		}
-		return unClicked;
-	}
-	
-	private Set<Box> getClickableNeighbours(Box box) {
-		Set<Box> clickableNeighbours = new HashSet<Box>();
-		for (Box nb:box.getNearbyBoxes().values()) {
-			if (!nb.hasFlag() && !nb.isClicked()) {
-				clickableNeighbours.add(nb);
-			}
-		}
-		return clickableNeighbours;
-	}
-
 	private Set<Box> getNumberedBoxes() {
 		/**
 		 * returns clicked boxes with nearbyBombs >= 1
@@ -53,16 +32,6 @@ public class Solver extends Thread {
 			}
 		}
 		return numberedBoxes;
-	}
-	
-	private Set<Box> getFlaggedNeighbours(Box box) {
-		Set<Box> flaggedNeighbours = new HashSet<Box>();
-		for (Box nb:box.getNearbyBoxes().values()) {
-			if (nb.hasFlag()) {
-				flaggedNeighbours.add(nb);
-			}
-		}
-		return flaggedNeighbours;
 	}
 	
 	private Set<Box> getUnResolvedBoxes() {
@@ -78,14 +47,24 @@ public class Solver extends Thread {
 		return unResolvedBoxes;
 	}
 
-	private int getNearbyFlagsCount(Box box) {
-		int nFlags = 0;
+	private Set<Box> getClickableNeighbours(Box box) {
+		Set<Box> clickableNeighbours = new HashSet<Box>();
 		for (Box nb:box.getNearbyBoxes().values()) {
-			if (nb.hasFlag()) {
-				nFlags++;
+			if (!nb.hasFlag() && !nb.isClicked()) {
+				clickableNeighbours.add(nb);
 			}
 		}
-		return nFlags;
+		return clickableNeighbours;
+	}
+
+	private Set<Box> getFlaggedNeighbours(Box box) {
+		Set<Box> flaggedNeighbours = new HashSet<Box>();
+		for (Box nb:box.getNearbyBoxes().values()) {
+			if (nb.hasFlag()) {
+				flaggedNeighbours.add(nb);
+			}
+		}
+		return flaggedNeighbours;
 	}
 	
 	private Box getRandomClickableBox() {
@@ -132,7 +111,6 @@ public class Solver extends Thread {
 			
 			/* Check unresolved boxes (boxes at the edge) */
 			unResolvedBoxes = getUnResolvedBoxes();
-			int n = unResolvedBoxes.size();
 			System.out.println("Number of unresolved boxes: " + Integer.toString(unResolvedBoxes.size()));
 			for (Box urb:unResolvedBoxes) {
 				System.out.println("Solver evaluating box " + urb.getPoint().toString());

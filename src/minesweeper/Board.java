@@ -75,10 +75,6 @@ public class Board {
 		return board.get(new Point(x,y));
 	}
 	
-	private void setBox(int x, int y, Box box) {
-		board.put(new Point(x,y), box);
-	}
-	
 	public int getWidth() {
 		return hSize;
 	}
