@@ -18,12 +18,13 @@ public class GameInterface {
 	private JTextField nField;
 	private JButton startButton;
 	private JButton newGameButton;
+	private JButton solverButton;
 	private GameListener listener;
 	private JPanel statusPanel;
 	private JPanel paramsPanel;
 	private JPanel startPanel;
 	private JPanel boardPanel;
-	private JPanel newGamePanel;
+	private JPanel bottomPanel;
 	private JPanel warningPanel;
 	
 	public GameInterface() {
@@ -33,7 +34,7 @@ public class GameInterface {
 		paramsPanel = new JPanel();
 		startPanel = new JPanel();
 		boardPanel = new JPanel();
-		newGamePanel = new JPanel();
+		bottomPanel = new JPanel();
 		newGameWindow = new JFrame("New Game");
 		statusLabel = new JLabel();
 		warningLabel = new JLabel();
@@ -44,6 +45,7 @@ public class GameInterface {
 		startButton = new JButton("Start Game");
 		newGameButton = new JButton("Start New Game");
 		listener = new GameListener();
+		solverButton = new JButton("Solver");
 	}
 	
 	public void preStart() {
@@ -82,6 +84,11 @@ public class GameInterface {
 		/* Board Panel @ Main Frame */
 		mainFrame.add(boardPanel);
 		
+		/* Solver Panel @ Main Frame */
+		solverButton.addMouseListener(listener);
+		bottomPanel.add(solverButton);
+		mainFrame.add(bottomPanel, BorderLayout.PAGE_END);
+		
 		/* Add Listeners to All Frames */
 		mainFrame.addWindowListener(listener);
 		newGameWindow.addWindowListener(listener);
@@ -106,8 +113,8 @@ public class GameInterface {
 		
 		/* Start New Game @ Main Frame */
 		newGameButton.addMouseListener(listener);
-		newGamePanel.add(newGameButton);
-		mainFrame.add(newGamePanel, BorderLayout.PAGE_END);
+		bottomPanel.add(newGameButton);
+		// mainFrame.add(bottomPanel, BorderLayout.PAGE_END);
 		
 		mainFrame.setMinimumSize(new Dimension(600,400));
 		mainFrame.setEnabled(true);
@@ -147,6 +154,10 @@ public class GameInterface {
 				box.resizeFlagImage();
 			}
 		}
+	}
+	
+	public void solve() {
+		board.solve();
 	}
 	
 	public void updateStatus() {
@@ -221,6 +232,7 @@ public class GameInterface {
 					newGameWindow.setVisible(true);
 					mainFrame.setVisible(false);
 					try {
+						board.stopTimer();
 						gameOverWindow.dispose();
 						gameSuccessWindow.dispose();
 					} catch (Exception e) {
@@ -229,7 +241,12 @@ public class GameInterface {
 						}
 					}
 				}
-			}	
+			}
+			if (solverButton == evt.getSource()) {
+				if (evt.getButton() == 1) {
+					solve();
+				}
+			}
 		}
 
 		@Override public void mousePressed(MouseEvent e) {}

@@ -14,11 +14,12 @@ public class Board {
 	private Set<Point> flags;
 	private boolean gameOver;
 	private String statusMsg;
-	private final LocalTime startTime;
+	private LocalTime startTime;
 	private LocalTime currentTime;
 	private Duration duration;
 	private TimerTask updater;
 	private Timer timer;
+	private Solver solver;
 	private boolean isSolverOn;
 	
 	public Board(GameInterface gameInterface, int hSize, int vSize) {
@@ -34,11 +35,19 @@ public class Board {
 			}
 		}
 		gameOver = false;
+		updater = new StatusUpdater();
+		isSolverOn = false;
+		startTimer();
+	}
+	
+	public void startTimer() {
 		startTime = LocalTime.now();
 		timer = new Timer();
-		updater = new StatusUpdater();
 		timer.scheduleAtFixedRate(updater, 0, 500);
-		isSolverOn = false;
+	}
+	
+	public void stopTimer() {
+		timer.cancel();
 	}
 	
 	public void solverOn() {
@@ -51,6 +60,11 @@ public class Board {
 	
 	public boolean getSolverStatus() {
 		return isSolverOn;
+	}
+	
+	public void solve() {
+		solver = new Solver(this);
+		solver.start();
 	}
 	
 	public Collection<Box> getAllBoxes() {
@@ -146,6 +160,8 @@ public class Board {
 		if (getSolverStatus()) {
 			String timeStr = durationToString(duration);
 			setStatusMsg("Elapsed Time: " + timeStr + " | Solver accidentally hit a bomb");
+			intrface.updateStatus();
+			System.out.println("Solver accidentally hit a bomb");
 		} else {
 			intrface.gameOver();
 		}
@@ -183,6 +199,8 @@ public class Board {
 		if (getSolverStatus()) {
 			String timeStr = durationToString(duration);
 			setStatusMsg("Elapsed Time: " + timeStr + " | Solver successfully finished the game");
+			intrface.updateStatus();
+			System.out.println("Solver finished the game");
 		} else {
 			intrface.gameSuccess();
 		}

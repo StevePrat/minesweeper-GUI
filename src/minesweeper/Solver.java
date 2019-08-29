@@ -1,63 +1,24 @@
 package minesweeper;
 
-import java.awt.Point;
 import java.util.*;
 
-public class Solver {
+public class Solver extends Thread {
 	
 	private Board board;
-	private Set<Box> clickedBoxes;
-	private Set<Box> unClickedBoxes;
-	private Set<Box> checkedBoxes;
 	
 	public Solver(Board board) {
 		this.board = board;
-		clickedBoxes = new HashSet<Box>();
-		unClickedBoxes = new HashSet<Box>();
-		checkedBoxes = new HashSet<Box>();
 	}
 	
-	private void update() {
+	private Set<Box> getClickedBoxes() {
+		Set<Box> clickedBoxes = new HashSet<Box>();
 		Set<Box> allBoxes = new HashSet<Box>(board.getAllBoxes()); 
 		for (Box box:allBoxes) {
 			if (box.isClicked()) {
 				clickedBoxes.add(box);
-			} else {
-				unClickedBoxes.add(box);
 			}
 		}
-	}
-	
-	private Set<Box> getClickedBoxes() {
 		return clickedBoxes;
-	}
-	
-	private Set<Box> getNumberedBoxes() {
-		/**
-		 * returns clicked boxes with nearbyBombs >= 1
-		 */
-		Set<Box> numberedBoxes = new HashSet<Box>();
-		for (Box box:getClickedBoxes()) {
-			if (box.getNearbyBombCount() > 0) {
-				numberedBoxes.add(box);
-			}
-		}
-		return numberedBoxes;
-	}
-	
-	private Set<Box> getUnClickedBoxes() {
-		return unClickedBoxes;
-	}
-	
-	private Set<Box> getClickedNeighbours(Box box) {
-		Set<Box> clicked = new HashSet<Box>();
-		Collection<Box> nearBoxes = box.getNearbyBoxes().values();
-		for (Box nb:nearBoxes) {
-			if (nb.isClicked()) {
-				clicked.add(nb);
-			}
-		}
-		return clicked;
 	}
 	
 	private Set<Box> getUnClickedNeighbours(Box box) {
@@ -71,6 +32,52 @@ public class Solver {
 		return unClicked;
 	}
 	
+	private Set<Box> getClickableNeighbours(Box box) {
+		Set<Box> clickableNeighbours = new HashSet<Box>();
+		for (Box nb:box.getNearbyBoxes().values()) {
+			if (!nb.hasFlag() && !nb.isClicked()) {
+				clickableNeighbours.add(nb);
+			}
+		}
+		return clickableNeighbours;
+	}
+
+	private Set<Box> getNumberedBoxes() {
+		/**
+		 * returns clicked boxes with nearbyBombs >= 1
+		 */
+		Set<Box> numberedBoxes = new HashSet<Box>();
+		for (Box box:getClickedBoxes()) {
+			if (box.getNearbyBombCount() > 0) {
+				numberedBoxes.add(box);
+			}
+		}
+		return numberedBoxes;
+	}
+	
+	private Set<Box> getFlaggedNeighbours(Box box) {
+		Set<Box> flaggedNeighbours = new HashSet<Box>();
+		for (Box nb:box.getNearbyBoxes().values()) {
+			if (nb.hasFlag()) {
+				flaggedNeighbours.add(nb);
+			}
+		}
+		return flaggedNeighbours;
+	}
+	
+	private Set<Box> getUnResolvedBoxes() {
+		/**
+		 * UnResolved boxes are defined as numbered boxes which still have unflagged neighbours
+		 */
+		Set<Box> unResolvedBoxes = new HashSet<Box>();
+		for (Box box:getNumberedBoxes()) {
+			if (!getClickableNeighbours(box).isEmpty()) {
+				unResolvedBoxes.add(box);
+			}
+		}
+		return unResolvedBoxes;
+	}
+
 	private int getNearbyFlagsCount(Box box) {
 		int nFlags = 0;
 		for (Box nb:box.getNearbyBoxes().values()) {
@@ -81,53 +88,68 @@ public class Solver {
 		return nFlags;
 	}
 	
-	public void solve() {
-		board.solverOn();
-		update();
-		
+	private Box getRandomClickableBox() {
 		Random rnd = new Random();
 		int x = rnd.nextInt(board.getWidth());
 		int y = rnd.nextInt(board.getHeight());
-		Box box = board.getBox(x, y);		
-		box.leftClick();
-		update();
-		
-		if (board.isGameOver() || board.isSuccessful()) {
-			return;
+		Box box = board.getBox(x, y);
+		if (box.isClicked() || box.hasFlag()) {
+			box = getRandomClickableBox();
 		}
+		return box;
+	}
+	
+	private void pause(int ms) {
+		try {
+			Thread.sleep(ms);
+		} catch (InterruptedException e) {}
+	}
+	
+	@Override
+	public void run() {
+		solve();
+	}
+	
+	public void solve() {
+		board.solverOn();
+		System.out.println("Solver started");
 		
-		Set<Box> boxesToCheck;
-		int nFlags;
-		
+		Set<Box> unResolvedBoxes = getUnResolvedBoxes();
 		/* While game has not ended */
 		while (!(board.isGameOver() || board.isSuccessful())) {
-			boxesToCheck = getNumberedBoxes();
-			box = boxesToCheck.iterator().next();
-			nFlags = getNearbyFlagsCount(box);
-			Set<Box> unClickedNeighbours = getUnClickedNeighbours(box);
-			
-			/* If there's some box to click nearby */
-			if (!unClickedNeighbours.isEmpty()) {
-				/* Flag all unclicked boxes nearby 
-				 * if the number of bomb count matches the number of unclicked boxes */
-				if (unClickedNeighbours.size() == box.getNearbyBombCount()) {
-					for (Box nb:unClickedNeighbours) {
-						if (!nb.hasFlag()) {
-							nb.rightClick();
-						}
-					}
-				} else if (nFlags == box.getNearbyBombCount()) {
-				/* Else click the unflagged boxes
-				 * if the number of flags matches the number of unclicked boxes */
-					for (Box nb:unClickedNeighbours) {
-						if (!nb.hasFlag()) {
-							nb.leftClick();	
-						}
-					}
-					update();
-				} else {
-					// Else do nothing
+			/* Randomly click a box as a start, or when stuck */
+			if (unResolvedBoxes.equals(getUnResolvedBoxes())) {
+				Box box = getRandomClickableBox();
+				System.out.println("Solver picked a random box " + box.getPoint().toString());
+				box.leftClick();
+				/* Check for termination condition */
+				if (board.isGameOver() || board.isSuccessful()) {
+					return;
 				}
+			}
+			
+			pause(500);
+			
+			/* Check unresolved boxes (boxes at the edge) */
+			unResolvedBoxes = getUnResolvedBoxes();
+			int n = unResolvedBoxes.size();
+			System.out.println("Number of unresolved boxes: " + Integer.toString(unResolvedBoxes.size()));
+			for (Box urb:unResolvedBoxes) {
+				System.out.println("Solver evaluating box " + urb.getPoint().toString());
+				/* Left click neighbours if possible */
+				if (urb.getNearbyBombCount() == getFlaggedNeighbours(urb).size()) {
+					for (Box clickable:getClickableNeighbours(urb)) {
+						clickable.leftClick();
+					}
+				}
+				/* Flag neighbours if possible (pigeonhole principle) */
+				if ((urb.getNearbyBombCount() - getFlaggedNeighbours(urb).size()) == getClickableNeighbours(urb).size()) {
+					for (Box nb:getClickableNeighbours(urb)) {
+						nb.rightClick();
+					}
+				}
+				
+				pause(500);
 			}
 		}
 	}
