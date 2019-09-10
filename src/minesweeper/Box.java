@@ -75,13 +75,15 @@ public class Box {
 	}
 	
 	public void rightClick() {
-		System.out.println("Button right clicked: " + Integer.toString(x) + "," + Integer.toString(y));
-		if (hasFlag()) {
-			removeFlag();
-		} else {
-			putFlag();
+		if (!isClicked()) {
+			System.out.println("Button right clicked: " + Integer.toString(x) + "," + Integer.toString(y));
+			if (hasFlag()) {
+				removeFlag();
+			} else {
+				putFlag();
+			}
+			board.checkForSuccess();
 		}
-		board.checkForSuccess();
 	}
 	
 	public void clickNearby() {

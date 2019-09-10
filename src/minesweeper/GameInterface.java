@@ -95,11 +95,52 @@ public class GameInterface {
 	}
 	
 	public boolean isParamsValid() {
-		int width = Integer.parseInt(widthField.getText());
-		int height = Integer.parseInt(heightField.getText());
+		int width;
+		int height;
+		int bombs;
+		
+		/* Input must be of the right type (integers) */
+		try {
+			width = Integer.parseInt(widthField.getText().strip());
+			height = Integer.parseInt(heightField.getText().strip());
+			bombs = Integer.parseInt(nField.getText().strip());
+		} catch (NumberFormatException e) {
+			showWarning("Please enter positive integers only");
+			e.printStackTrace();
+			return false;
+		}
+		
+		/* Integers must be valid */
+		boolean isValid = true;
+		String msg = "";
+		
+		if (width <= 0) {
+			msg += "Board width must be a positive integer<br>";
+			isValid = false;
+		}
+		if (height <= 0) {
+			msg += "Board height must be a positive integer<br>";
+			isValid = false;
+		}
+		if (bombs <= 0) {
+			msg += "Number of Bombs must be a positive integer<br>";
+			isValid = false;
+		}
+		
 		int boxes = width * height;
-		int bombs = Integer.parseInt(nField.getText());
-		return bombs < boxes;
+		if (bombs >= boxes) {
+			msg += "Too many bombs";
+			isValid = false;
+		}
+		
+		/* Show warning message */
+		if (!msg.isEmpty()) {
+			showWarning("<html>" + msg + "</html>");
+		} else {
+			showWarning(null);
+		}
+		
+		return isValid;
 	}
 	
 	public void showWarning(String msg) {
@@ -122,12 +163,12 @@ public class GameInterface {
 		newGameWindow.setVisible(false);
 		
 		/* Initialize Board */
-		int width = Integer.parseInt(widthField.getText());
-		int height = Integer.parseInt(heightField.getText());
+		int width = Integer.parseInt(widthField.getText().strip());
+		int height = Integer.parseInt(heightField.getText().strip());
 		board = new Board(this,width,height);
 		
 		/* Put Bombs */
-		int n = Integer.parseInt(nField.getText());
+		int n = Integer.parseInt(nField.getText().strip());
 		board.putBombs(n);
 		
 		/* Grid View for Board Panel */
@@ -220,10 +261,7 @@ public class GameInterface {
 			if (startButton == evt.getSource()) {
 				if (evt.getButton() == 1) {
 					if (isParamsValid()) {
-						showWarning(null);
 						start();
-					} else {
-						showWarning("Too many bombs");
 					}
 				}
 			}
